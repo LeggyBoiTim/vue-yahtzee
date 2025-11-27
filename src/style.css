@@ -77,26 +77,3 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
-table {
-  border-collapse: separate;
-  border: black 5px solid;
-  border-radius: 10px;
-  table-layout: fixed;
-  width: 400px;
-  height: 80px;
-}
-
-td {
-  border-left:solid black 2px;
-  border-top: none;
-  font-size: xx-large;
-  font-weight: bold;
-  overflow: hidden;
-  line-height: 0;
-  padding: 0;
-}
-
-td:first-child {
-  border-left: none;
-}

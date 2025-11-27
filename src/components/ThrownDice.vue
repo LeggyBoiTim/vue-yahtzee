@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
 
-const diceArray = ref([]);
+const diceArray = defineModel();
 const diceCount = ref({
     1: 0,
     2: 0,
@@ -36,4 +36,23 @@ const throwDice = () => {
 </template>
 
 <style scoped>
+table {
+    border-collapse: separate;
+    border: black 5px solid;
+    border-radius: 10px;
+    table-layout: fixed;
+    width: 400px;
+    height: 80px;
+}
+
+td {
+    border-left:solid black 2px;
+    font-size: xx-large;
+    font-weight: bold;
+    line-height: 0;
+}
+
+td:first-child {
+    border-left: none;
+}
 </style>
