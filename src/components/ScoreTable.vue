@@ -2,29 +2,99 @@
 import { computed, ref, watch } from 'vue';
 
 const dice = defineModel();
-
 const diceCount = ref({
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-    6: ''
+    1: 0,
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0
 });
+const diceTotal = ref(0);
 
 watch(dice.value, () => {
-    diceCount.value = {1: '', 2: '', 3: '', 4: '', 5: '', 6: ''};
-    for (const die of dice.value) {
+    diceCount.value = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+    for (let die of dice.value) {
         diceCount.value[die]++;
     }
+    let sum = (total, num) => {return total + num};
+    diceTotal.value = dice.value.reduce(sum, 0);
 });
 
 const onesToSixes = computed(() => {
-    const object = {};
-    for (const face in diceCount.value) {
-        diceCount.value[face] ? object[face] = face * diceCount.value[face] : object[face] == '';
+    let object = {};
+    for (let face in diceCount.value) {
+        object[face] = face * diceCount.value[face];
     }
     return object;
+});
+
+const findXOfAKind = (x, useEqual) => {
+    for (let face in diceCount.value) {
+        if ((useEqual && diceCount.value[face] === x) || (!useEqual && diceCount.value[face] >= x)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+const threeOfAKind = computed(() => {
+    return findXOfAKind(3, false) ? diceTotal.value : 0;
+});
+
+const fourOfAKind = computed(() => {
+    return findXOfAKind(4, false) ? diceTotal.value : 0;
+});
+
+const fullHouse = computed(() => {
+    return findXOfAKind(2, true) && findXOfAKind(3, true) ? 25 : 0;
+});
+
+const findSequentialDice = (x) => {
+    let run = 0;
+    for (let i in diceCount.value) {
+        diceCount.value[i] > 0 ? run++ : run = 0;
+        if (run === x) return true;
+    }
+    return false;
+}
+
+const smallStraight = computed(() => {
+    return findSequentialDice(4) ? 30 : 0;
+});
+
+const largeStraight = computed(() => {
+    return findSequentialDice(5) ? 40 : 0;
+});
+
+const yahtzee = computed(() => {
+    return findXOfAKind(5, false) ? 50 : 0;
+});
+
+const totalPart1 = computed(() => {
+    return diceTotal.value;
+});
+
+const extraBonus = computed(() => {
+    return diceTotal.value >= 63 ? 35 : 0;
+});
+
+const totalPart1WithBonus = computed(() => {
+    return diceTotal.value + extraBonus.value;
+});
+
+const totalPart2 = computed(() => {
+    return threeOfAKind.value +
+    fourOfAKind.value +
+    fullHouse.value +
+    smallStraight.value +
+    largeStraight.value +
+    yahtzee.value +
+    totalPart1.value;
+});
+
+const grandTotal = computed(() => {
+    return totalPart1WithBonus.value + totalPart2.value;
 });
 </script>
 
@@ -46,7 +116,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Ones</th>
                 <td>Total 1's</td>
-                <td>{{ onesToSixes[1] }}</td>
+                <td>{{ onesToSixes[1] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -56,7 +126,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Twos</th>
                 <td>Total 2's</td>
-                <td>{{ onesToSixes[2] }}</td>
+                <td>{{ onesToSixes[2] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -66,7 +136,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Threes</th>
                 <td>Total 3's</td>
-                <td>{{ onesToSixes[3] }}</td>
+                <td>{{ onesToSixes[3] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -76,7 +146,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Fours</th>
                 <td>Total 4's</td>
-                <td>{{ onesToSixes[4] }}</td>
+                <td>{{ onesToSixes[4] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -86,7 +156,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Fives</th>
                 <td>Total 5's</td>
-                <td>{{ onesToSixes[5] }}</td>
+                <td>{{ onesToSixes[5] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -96,7 +166,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Sixes</th>
                 <td>Total 6's</td>
-                <td>{{ onesToSixes[6] }}</td>
+                <td>{{ onesToSixes[6] || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -107,7 +177,7 @@ const onesToSixes = computed(() => {
         <tfoot>
             <tr>
                 <th colspan="2">Total Points</th>
-                <td></td>
+                <td>{{ totalPart1 || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -117,7 +187,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Extra Bonus</th>
                 <td>35 Points</td>
-                <td></td>
+                <td>{{ extraBonus || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -126,7 +196,7 @@ const onesToSixes = computed(() => {
             </tr>
             <tr>
                 <th colspan="2">Total Part 1</th>
-                <td></td>
+                <td>{{ totalPart1WithBonus || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -153,7 +223,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Three of a Kind</th>
                 <td>Total Dice</td>
-                <td></td>
+                <td>{{ threeOfAKind || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -163,7 +233,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Four of a Kind</th>
                 <td>Total Dice</td>
-                <td></td>
+                <td>{{ fourOfAKind || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -173,7 +243,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Full House</th>
                 <td>25 Points</td>
-                <td></td>
+                <td>{{ fullHouse || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -183,7 +253,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Small Straight</th>
                 <td>30 Points</td>
-                <td></td>
+                <td>{{ smallStraight || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -193,7 +263,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Large Straight</th>
                 <td>40 Points</td>
-                <td></td>
+                <td>{{ largeStraight || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -203,7 +273,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Yahtzee</th>
                 <td>50 Points</td>
-                <td></td>
+                <td>{{ yahtzee || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -213,7 +283,7 @@ const onesToSixes = computed(() => {
             <tr>
                 <th>Chance</th>
                 <td>Total Dice</td>
-                <td></td>
+                <td>{{ totalPart1 || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -224,7 +294,7 @@ const onesToSixes = computed(() => {
         <tfoot>
             <tr>
                 <th colspan="2">Total Part 2</th>
-                <td></td>
+                <td>{{ totalPart2 || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -233,7 +303,7 @@ const onesToSixes = computed(() => {
             </tr>
             <tr>
                 <th colspan="2">Total Part 1</th>
-                <td></td>
+                <td>{{ totalPart1 || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -242,7 +312,7 @@ const onesToSixes = computed(() => {
             </tr>
             <tr>
                 <th colspan="2">Total Score</th>
-                <td></td>
+                <td>{{ grandTotal || '' }}</td>
                 <td></td>
                 <td></td>
                 <td></td>
