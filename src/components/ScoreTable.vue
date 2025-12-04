@@ -1,24 +1,19 @@
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed } from 'vue';
 
 const dice = defineModel();
-const diceCount = ref({
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0
-});
-const diceTotal = ref(0);
 
-watch(dice.value, () => {
-    diceCount.value = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
+const diceCount = computed(() => {
+    let count = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0};
     for (let die of dice.value) {
-        diceCount.value[die]++;
+        count[die]++;
     }
+    return count;
+});
+
+const diceTotal = computed(() => {
     let sum = (total, num) => {return total + num};
-    diceTotal.value = dice.value.reduce(sum, 0);
+    return dice.value.reduce(sum, 0);
 });
 
 const onesToSixes = computed(() => {
